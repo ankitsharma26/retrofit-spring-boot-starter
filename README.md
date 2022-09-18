@@ -1,4 +1,3 @@
-
 ## retrofit-spring-boot-starter
 
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
@@ -10,40 +9,29 @@
 [![Author](https://img.shields.io/badge/Author-chentianming-orange.svg?style=flat-square)](https://juejin.im/user/3562073404738584/posts)
 [![QQ-Group](https://img.shields.io/badge/QQ%E7%BE%A4-806714302-orange.svg?style=flat-square) ](https://img.ljcdn.com/hc-picture/6302d742-ebc8-4649-95cf-62ccf57a1add)
 
-[English Document](https://github.com/LianjiaTech/retrofit-spring-boot-starter/blob/master/README_EN.md)
+[中文文档](https://github.com/LianjiaTech/retrofit-spring-boot-starter/blob/master/README.md)
 
-**`retrofit-spring-boot-starter`实现了`Retrofit`与`spring-boot`框架快速整合，并且支持了诸多功能增强，极大简化开发**。
+**`retrofit-spring-boot-starter` realizes the rapid integration of `Retrofit` and `spring-boot` framework, and supports many functional enhancements, which greatly simplifies development**.
 
-> 🚀项目持续优化迭代，欢迎大家提ISSUE和PR！麻烦大家能给一颗star✨，您的star是我们持续更新的动力！
 
-github项目地址：[https://github.com/LianjiaTech/retrofit-spring-boot-starter](https://github.com/LianjiaTech/retrofit-spring-boot-starter)
+## Features
 
-gitee项目地址：[https://gitee.com/lianjiatech/retrofit-spring-boot-starter](https://gitee.com/lianjiatech/retrofit-spring-boot-starter)
+- [x] [Customize OkHttpClient](#Customize-OkHttpClient)
+- [x] [Annotation Interceptor](#Annotation-Interceptor)
+- [x] [Log Print](#Log-Print)
+- [x] [Request Retry](#Request-Retry)
+- [x] [Fusing Degrade](#Fusing-Degrade)
+- [x] [Error Decoder](#Error-Decoder)
+- [x] [HTTP Calls Between Microservices](#HTTP-Calls-Between-Microservices)
+- [x] [Global Interceptor](#Global-Interceptor)
+- [x] [Call Adapter](#Call-Adapter)
+- [x] [Data Converter](#Data-Converter)
+- [x] [Meta-annotation](#Meta-annotation)
+- [x] [Other Examples](#Other-Examples)
 
-示例demo：[https://github.com/ismart-yuxi/retrofit-spring-boot-demo](https://github.com/ismart-yuxi/retrofit-spring-boot-demo)
+## Quick Start
 
-> 感谢`@ismart-yuxi`为本项目写的示例demo
-
-<!--more-->
-
-## 功能特性
-
-- [x] [自定义OkHttpClient](#自定义OkHttpClient)
-- [x] [注解式拦截器](#注解式拦截器)
-- [x] [日志打印](#日志打印)
-- [x] [请求重试](#请求重试)
-- [x] [熔断降级](#熔断降级)
-- [x] [错误解码器](#错误解码器)
-- [x] [微服务之间的HTTP调用](#微服务之间的HTTP调用)
-- [x] [全局拦截器](#全局拦截器)
-- [x] [调用适配器](#调用适配器)
-- [x] [数据转换器](#数据转码器)
-- [x] [元注解](#元注解)
-- [x] [其他功能示例](#其他功能示例)
-
-## 快速开始
-
-### 引入依赖
+### Import Dependencies
 
 ```xml
 <dependency>
@@ -53,11 +41,9 @@ gitee项目地址：[https://gitee.com/lianjiatech/retrofit-spring-boot-starter]
 </dependency>
 ```
 
-**如果启动失败，大概率是依赖冲突，烦请引入或者排除相关依赖**。
+### Define HTTP Interface
 
-### 定义HTTP接口
-
-**接口必须使用`@RetrofitClient`注解标记**！HTTP相关注解可参考官方文档：[retrofit官方文档](https://square.github.io/retrofit/)。
+**Interfaces must be marked with the `@RetrofitClient` annotation**！For HTTP related annotations, please refer to the official documentation：[Retrofit official documentation](https://square.github.io/retrofit/).
 
 ```java
 @RetrofitClient(baseUrl = "${test.baseUrl}")
@@ -68,11 +54,13 @@ public interface HttpApi {
 }
 ```
 
-> 注意：**方法请求路径慎用`/`开头**。对于`Retrofit`而言，如果`baseUrl=http://localhost:8080/api/test/`，方法请求路径如果是`person`，则该方法完整的请求路径是：`http://localhost:8080/api/test/person`。而方法请求路径如果是`/person`，则该方法完整的请求路径是：`http://localhost:8080/person`。
+> Notice：**The method request path should be cautiously used at the beginning of `/`**. For `Retrofit`, if `baseUrl=http://localhost:8080/api/test/` and the method request path is `person`, then the complete request path of the method is: `http://localhost: 8080/api/test/person`. If the method request path is `/person`, the complete request path of the method is: `http://localhost:8080/person`.
 
-### 注入使用
 
-**将接口注入到其它Service中即可使用！**
+
+### Inject Using
+
+**Inject the interface into other services to use**:
 
 ```java
 @Service
@@ -82,96 +70,76 @@ public class TestService {
     private HttpApi httpApi;
 
     public void test() {
-       // 使用`httpApi`发起HTTP请求
+        // Use `httpApi` to initiate HTTP requests
     }
 }
 ```
 
-**默认情况下，自动使用`SpringBoot`扫描路径进行`RetrofitClient`注册**。你也可以在配置类加上`@RetrofitScan`手工指定扫描路径。
+**Automatically use `Spring Boot` scan path for `RetrofitClient` registration by default**. You can also manually specify the scan path by adding `@RetrofitScan` to the configuration class.
 
-## HTTP请求相关注解
+##  HTTP Related Annotations
 
-`HTTP`请求相关注解，全部使用了`Retrofit`原生注解，以下是一个简单说明：
+`HTTP` request related annotations, all use `Retrofit` native annotations, the following is a brief description:
 
-| 注解分类|支持的注解 |
+| Classification | Supported Annotations |
 |------------|-----------|
-|请求方式|`@GET` `@HEAD` `@POST` `@PUT` `@DELETE` `@OPTIONS` `@HTTP`|
-|请求头|`@Header` `@HeaderMap` `@Headers`|
-|Query参数|`@Query` `@QueryMap` `@QueryName`|
-|path参数|`@Path`|
-|form-encoded参数|`@Field` `@FieldMap` `@FormUrlEncoded`|
-| 请求体 |`@Body`|
-|文件上传|`@Multipart` `@Part` `@PartMap`|
-|url参数|`@Url`|
+| Request Method |`@GET` `@HEAD` `@POST` `@PUT` `@DELETE` `@OPTIONS` `@HTTP`|
+| Request Header |`@Header` `@HeaderMap` `@Headers`|
+| Query Parameter |`@Query` `@QueryMap` `@QueryName`|
+| Path Parameter |`@Path`|
+| Form-encoded Parameter |`@Field` `@FieldMap` `@FormUrlEncoded`|
+| Request Body |`@Body`|
+| File Upload |`@Multipart` `@Part` `@PartMap`|
+| Url Parameter |`@Url`|
 
-> 详细信息可参考官方文档：[retrofit官方文档](https://square.github.io/retrofit/)
+> For details, please refer to the official documentation:[Retrofit official documentation](https://square.github.io/retrofit/)
 
-## 配置属性
 
-组件支持了多个可配置的属性，用来应对不同的业务场景，具体可支持的配置属性及默认值如下：
+## Configuration Properties
 
-**注意：应用只需要配置要更改的配置项**!
+The component supports multiple configurable properties to deal with different business scenarios. The specific supported configuration properties and default values are as follows:
 
 ```yaml
 retrofit:
-   # 全局转换器工厂
    global-converter-factories:
       - com.github.lianjiatech.retrofit.spring.boot.core.BasicTypeConverterFactory
       - retrofit2.converter.jackson.JacksonConverterFactory
-   # 全局调用适配器工厂(组件扩展的调用适配器工厂已经内置，这里请勿重复配置)
    global-call-adapter-factories:
-
-   # 全局日志打印配置
    global-log:
-      # 启用日志打印
       enable: true
-      # 全局日志打印级别
       log-level: info
-      # 全局日志打印策略
       log-strategy: basic
 
-   # 全局重试配置
    global-retry:
-      # 是否启用全局重试
       enable: false
-      # 全局重试间隔时间
       interval-ms: 100
-      # 全局最大重试次数
       max-retries: 2
-      # 全局重试规则
       retry-rules:
          - response_status_not_2xx
          - occur_io_exception
 
-   # 熔断降级配置
    degrade:
-      # 熔断降级类型。默认none，表示不启用熔断降级
       degrade-type: none
-      # 全局sentinel降级配置
       global-sentinel-degrade:
-         # 是否开启
          enable: false
-         # 各降级策略对应的阈值。平均响应时间(ms)，异常比例(0-1)，异常数量(1-N)
+         # Threshold corresponding to each degrade policy. Average response time (ms), exceptions ratio (0-1), number of exceptions (1-N)
          count: 1000
-         # 熔断时长，单位为 s
          time-window: 5
-         # 降级策略（0：平均响应时间；1：异常比例；2：异常数量）
+         # Degradation strategy (0: average response time; 1: ratio of exceptions; 2: number of exceptions)
          grade: 0
 
-      # 全局resilience4j降级配置
       global-resilience4j-degrade:
-         # 是否开启
          enable: false
-         # 根据该名称从#{@link CircuitBreakerConfigRegistry}获取CircuitBreakerConfig，作为全局熔断配置
+         # Get CircuitBreakerConfig from {@link CircuitBreakerConfigRegistry} based on this name as a global circuit breaker configuration
          circuit-breaker-config-name: defaultCircuitBreakerConfig
 ```
 
-## 高级功能
+## Advanced Features
 
-### 自定义OkHttpClient
+### Customize OkHttpClient
 
-1. 实现`SourceOkHttpClientRegistrar`接口，调用`SourceOkHttpClientRegistry#register()`方法注册`OkHttpClient`。
-   
+1. Implement the `SourceOkHttpClientRegistrar` interface and call the `SourceOkHttpClientRegistry#register()` method to register the `OkHttpClient`.
+
    ```java
    @Slf4j
    @Component
@@ -180,7 +148,7 @@ retrofit:
        @Override
        public void register(SourceOkHttpClientRegistry registry) {
    
-           // 替换默认的SourceOkHttpClient，可以用来修改全局OkhttpClient设置
+           // replace default SourceOkHttpClient. Can be used to modify global `Okhttp Client` settings
            registry.register(Constants.DEFAULT_SOURCE_OK_HTTP_CLIENT, new OkHttpClient.Builder()
                    .connectTimeout(Duration.ofSeconds(5))
                    .writeTimeout(Duration.ofSeconds(5))
@@ -191,7 +159,7 @@ retrofit:
                    })
                    .build());
    
-           // 添加testSourceOkHttpClient
+           // add testSourceOkHttpClient
            registry.register("testSourceOkHttpClient", new OkHttpClient.Builder()
                    .connectTimeout(Duration.ofSeconds(3))
                    .writeTimeout(Duration.ofSeconds(3))
@@ -205,7 +173,7 @@ retrofit:
    }
    ```
 
-2. 通过`@RetrofitClient.sourceOkHttpClient`指定当前接口要使用的`OkHttpClient`。
+2. Specify the `OkHttpClient` to be used by the current interface through `@RetrofitClient.sourceOkHttpClient`.
 
    ```java
    @RetrofitClient(baseUrl = "${test.baseUrl}", sourceOkHttpClient = "testSourceOkHttpClient")
@@ -216,22 +184,22 @@ retrofit:
    }
    ```
 
-> 注意：组件不会直接使用指定的`OkHttpClient`，而是基于该`OkHttpClient`创建一个新的。
+> Note: The component will not use the specified `OkHttpClient` directly, but will create a new one based on that `OkHttpClient`.
 
 
 
-### 注解式拦截器
+### Annotation Interceptor
 
-组件提供了**注解式拦截器**，支持基于url路径匹配拦截，使用的步骤如下：
+The component provides **Annotation Interceptor**, which supports interception based on url path matching. The steps used are as follows:
 
-1. 继承`BasePathMatchInterceptor`
-2. 使用`@Intercept`注解指定要使用的拦截器
+1. Inherit `BasePathMatchInterceptor`
+2. Use the `@Intercept` annotation to specify the interceptor to use
 
-> 如果需要使用多个拦截器，在接口上标注多个`@Intercept`注解即可。
+> If you need to use multiple interceptors, you can mark multiple `@Intercept` annotations on the interface.
 
-下面以"给指定请求的url后面拼接timestamp时间戳"为例，介绍下如何使用注解式拦截器。
+The following is an example of "splicing timestamp behind the specified request url" to introduce how to use annotation interceptors.
 
-#### 继承`BasePathMatchInterceptor`编写拦截处理器
+#### Inherit `BasePathMatchInterceptor`
 
 ```java
 @Component
@@ -254,12 +222,12 @@ public class TimeStampInterceptor extends BasePathMatchInterceptor {
 
 ```
 
-#### 接口上使用`@Intercept`进行标注
+#### Use the `@Intercept` annotation to specify the interceptor to use
 
 ```java
 @RetrofitClient(baseUrl = "${test.baseUrl}")
 @Intercept(handler = TimeStampInterceptor.class, include = {"/api/**"}, exclude = "/api/test/savePerson")
-@Intercept(handler = TimeStamp2Interceptor.class) // 需要多个，直接添加即可
+@Intercept(handler = TimeStamp2Interceptor.class) // Need more than one, just add it directly
 public interface HttpApi {
 
     @GET("person")
@@ -270,20 +238,17 @@ public interface HttpApi {
 }
 ```
 
-上面的`@Intercept`配置表示：拦截`HttpApi`接口下`/api/**`路径下（排除`/api/test/savePerson`）的请求，拦截处理器使用`TimeStampInterceptor`。
+### Custom Interception Annotation
 
-### 自定义拦截注解
+Sometimes, we need to dynamically pass in some parameters in the "Interception Annotation", and then use these parameters when intercepting. At this time, we can use "Custom Interception Annotation", the steps are as follows:
 
-有的时候，我们需要在"拦截注解"动态传入一些参数，然后在拦截的时候使用这些参数。 这时候，我们可以使用"自定义拦截注解"，步骤如下：
+1. Custom annotation. The `@InterceptMark` tag must be used, and the `include, exclude, handler` fields must be included in the annotation.
+2. inherit `BasePathMatchInterceptor`
+3. Use custom annotation on interfaces
 
-1. 自定义注解。必须使用`@InterceptMark`标记，并且注解中必须包括`include、exclude、handler`字段。
-2. 继承`BasePathMatchInterceptor`编写拦截处理器
-3. 接口上使用自定义注解
+For example, we need to "dynamically add `accessKeyId` and `accessKeySecret` signature information in the request header to initiate an HTTP request", which can be achieved by customizing the `@Sign` annotation.
 
-例如，我们需要"在请求头里面动态加入`accessKeyId`、`accessKeySecret`签名信息才能再发起HTTP请求"，这时候可以自定义`@Sign`注解来实现。
-
-
-#### 自定义`@Sign`注解
+#### Custom `@Sign` Annotation
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
@@ -291,22 +256,22 @@ public interface HttpApi {
 @Documented
 @InterceptMark
 public @interface Sign {
-    
+   
     String accessKeyId();
-
+    
     String accessKeySecret();
-
+    
     String[] include() default {"/**"};
-
+    
     String[] exclude() default {};
-
+    
     Class<? extends BasePathMatchInterceptor> handler() default SignInterceptor.class;
 }
 ```
 
-在`@Sign`注解中指定了使用的拦截器是`SignInterceptor`。
+The interceptor specified in the `@Sign` annotation is `SignInterceptor`.
 
-#### 实现`SignInterceptor`
+#### Implement `SignInterceptor`
 
 ```java
 @Component
@@ -336,11 +301,11 @@ public class SignInterceptor extends BasePathMatchInterceptor {
 }
 ```
 
-> 注意：`accessKeyId`和`accessKeySecret`字段必须提供`setter`方法。
+> Note: The `accessKeyId` and `accessKeySecret` fields must provide a `setter` method.
 
-拦截器的`accessKeyId`和`accessKeySecret`字段值会依据`@Sign`注解的`accessKeyId()`和`accessKeySecret()`值自动注入，如果`@Sign`指定的是占位符形式的字符串，则会取配置属性值进行注入。
+The `accessKeyId` and `accessKeySecret` field values of the interceptor will be automatically injected according to the `accessKeyId()` and `accessKeySecret()` values of the `@Sign` annotation, if `@Sign` specifies a string in the form of a placeholder , the configuration property value will be taken for injection.
 
-#### 接口上使用`@Sign`
+#### Using `@Sign` on the interface
 
 ```java
 @RetrofitClient(baseUrl = "${test.baseUrl}")
@@ -355,44 +320,40 @@ public interface HttpApi {
 }
 ```
 
-### 日志打印
+### Log Print
 
-组件支持支持全局日志打印和声明式日志打印。
+Component support supports global log printing and declarative log printing.
 
-#### 全局日志打印
+#### Global Log Printing
 
-默认情况下，全局日志打印是开启的，默认配置如下：
+By default, global log printing is enabled, and the default configuration is as follows:
 
 ```yaml
 retrofit:
-   # 全局日志打印配置
    global-log:
-      # 启用日志打印
       enable: true
-      # 全局日志打印级别
       log-level: info
-      # 全局日志打印策略
       log-strategy: basic
 ```
 
-四种日志打印策略含义如下：
+The meanings of the four log printing strategies are as follows:
 
 1. `NONE`：No logs.
 2. `BASIC`：Logs request and response lines.
 3. `HEADERS`：Logs request and response lines and their respective headers.
 4. `BODY`：Logs request and response lines and their respective headers and bodies (if present).
 
-#### 声明式日志打印
+#### Declarative Log Printing
 
-如果只需要部分请求才打印日志，可以在相关接口或者方法上使用`@Logging`注解。
+If only some requests are required to print the log, you can use the `@Logging` annotation on the relevant interface or method.
 
-#### 日志打印自定义扩展
+#### Log printing custom extension
 
-如果需要修改日志打印行为，可以继承`LoggingInterceptor`，并将其配置成`Spring bean`。
+If you need to modify the log printing behavior, you can inherit `LoggingInterceptor` and configure it as a `Spring bean`.
 
-#### 聚合日志打印
+#### Aggregate log printing
 
-如果需要将同一个请求的日志聚合在一起打印，可配置`AggregateLoggingInterceptor`。
+If the logs of the same request need to be aggregated and printed together, `AggregateLoggingInterceptor` can be configured.
 
 ```java
 @Bean
@@ -401,61 +362,55 @@ public LoggingInterceptor loggingInterceptor(RetrofitProperties retrofitProperti
 }
 ```
 
-### 请求重试
+### Request Retry
 
-组件支持支持全局重试和声明式重试。
+Component support supports global retry and declarative retry.
 
-#### 全局重试
+#### Global Retry
 
-全局重试默认关闭，默认配置项如下：
+Global retry is disabled by default, and the default configuration items are as follows:
 
 ```yaml
 retrofit:
-  # 全局重试配置
   global-retry:
-     # 是否启用全局重试
      enable: false
-     # 全局重试间隔时间
      interval-ms: 100
-     # 全局最大重试次数
      max-retries: 2
-     # 全局重试规则
      retry-rules:
         - response_status_not_2xx
         - occur_io_exception
  ```
 
-重试规则支持三种配置：
+The retry rule supports three configurations:
 
-1. `RESPONSE_STATUS_NOT_2XX`：响应状态码不是`2xx`时执行重试
-2. `OCCUR_IO_EXCEPTION`：发生IO异常时执行重试
-3. `OCCUR_EXCEPTION`：发生任意异常时执行重试
+1. `RESPONSE_STATUS_NOT_2XX`: retry when response status code is not `2xx`
+2. `OCCUR_IO_EXCEPTION`: Execute retry when IO exception occurs
+3. `OCCUR_EXCEPTION`: perform a retry on any exception
 
-#### 声明式重试
+#### Declarative Retry
 
-如果只有一部分请求需要重试，可以在相应的接口或者方法上使用`@Retry`注解。
+If only a part of the request needs to be retried, you can use the `@Retry` annotation on the corresponding interface or method.
 
-#### 请求重试自定义扩展
+#### Request retry custom extension
 
-如果需要修改请求重试行为，可以继承`RetryInterceptor`，并将其配置成`Spring bean`。
+If you need to modify the request retry behavior, you can inherit `RetryInterceptor` and configure it as a `Spring bean`.
 
-### 熔断降级
+### Fusing Degrade
 
-熔断降级默认关闭，当前支持`sentinel`和`resilience4j`两种实现。
+The circuit breaker degrade is disabled by default, and currently supports both `sentinel` and `resilience4j` implementations.
 
 ```yaml
 retrofit:
-   # 熔断降级配置
    degrade:
-      # 熔断降级类型。默认none，表示不启用熔断降级
+      # Fuse degrade type. The default is none, which means that fuse downgrade is not enabled
       degrade-type: sentinel
 ```
 
 #### Sentinel
 
-配置`degrade-type=sentinel`开启，然后在相关接口或者方法上声明`@SentinelDegrade`注解即可。
+Configure `degrade-type=sentinel` to enable, and then declare the `@SentinelDegrade` annotation on the relevant interface or method.
 
-记得手动引入`Sentinel`依赖：
+Remember to manually import `Sentinel` dependencies:
 
 ```xml
 
@@ -466,26 +421,22 @@ retrofit:
 </dependency>
 ```
 
-此外，还支持全局`Sentinel`熔断降级：
+In addition, global `Sentinel` circuit breaker degrade are also supported:
 
 ```yaml
 retrofit:
-  # 熔断降级配置
   degrade:
-    # 熔断降级类型。默认none，表示不启用熔断降级
     degrade-type: sentinel
-    # 全局sentinel降级配置
     global-sentinel-degrade:
-      # 是否开启
       enable: true
-      # ...其他sentinel全局配置
+      # Other sentinel global configuration
 ```
 
 #### Resilience4j
 
-配置`degrade-type=resilience4j`开启。然后在相关接口或者方法上声明`@Resilience4jDegrade`即可。
+Configure `degrade-type=resilience4j` to enable. Then declare `@Resilience4jDegrade` on the relevant interface or method.
 
-记得手动引入`Resilience4j`依赖：
+Remember to manually import `Resilience4j` dependencies:
 
 ```xml
 
@@ -496,25 +447,21 @@ retrofit:
 </dependency>
 ```
 
-通过以下配置可开启全局resilience4j熔断降级：
+In addition, global `Resilience4j` circuit breaker degrade are also supported:
 
 ```yaml
 retrofit:
-   # 熔断降级配置
    degrade:
-      # 熔断降级类型。默认none，表示不启用熔断降级
       degrade-type: resilience4j
-      # 全局resilience4j降级配置
       global-resilience4j-degrade:
-         # 是否开启
          enable: true
-         # 根据该名称从#{@link CircuitBreakerConfigRegistry}获取CircuitBreakerConfig，作为全局熔断配置
+         # Get CircuitBreakerConfig from {@link CircuitBreakerConfigRegistry} based on this name as a global circuit breaker configuration
          circuit-breaker-config-name: defaultCircuitBreakerConfig
 ```
 
-熔断配置管理：
+Circuit breaker configuration management：
 
-1. 实现`CircuitBreakerConfigRegistrar`接口，注册`CircuitBreakerConfig`。
+1. Implement the `CircuitBreakerConfigRegistrar` interface and register the `CircuitBreakerConfig`.
 
    ```java
    @Component
@@ -522,10 +469,8 @@ retrofit:
       @Override
       public void register(CircuitBreakerConfigRegistry registry) {
       
-            // 替换默认的CircuitBreakerConfig
             registry.register(Constants.DEFAULT_CIRCUIT_BREAKER_CONFIG, CircuitBreakerConfig.ofDefaults());
       
-            // 注册其它的CircuitBreakerConfig
             registry.register("testCircuitBreakerConfig", CircuitBreakerConfig.custom()
                     .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED)
                     .failureRateThreshold(20)
@@ -535,23 +480,22 @@ retrofit:
       }
    }
     ```
-   
-2. 通过`circuitBreakerConfigName`指定`CircuitBreakerConfig`。包括`retrofit.degrade.global-resilience4j-degrade.circuit-breaker-config-name`或者`@Resilience4jDegrade.circuitBreakerConfigName`
+
+2. Specify the `CircuitBreakerConfig` via `circuitBreakerConfigName`. Include `retrofit.degrade.global-resilience4j-degrade.circuit-breaker-config-name` or `@Resilience4jDegrade.circuitBreakerConfigName`
 
 
+#### Extended circuit breaker degrade
 
-#### 扩展熔断降级
+If the user needs to use another circuit breaker degrade implementation, inherit `BaseRetrofitDegrade` and configure it with `Spring Bean`.
 
-如果用户需要使用其他的熔断降级实现，继承`BaseRetrofitDegrade`，并将其配置`Spring Bean`。
+#### Configure fallback or fallbackFactory (optional)
 
-#### 配置fallback或者fallbackFactory (可选)
+If `@RetrofitClient` does not set `fallback` or `fallbackFactory`, when a circuit breaker is triggered, a `RetrofitBlockException` exception will be thrown directly. Users can customize the method return value when blown by setting `fallback` or `fallbackFactory`.
 
-如果`@RetrofitClient`不设置`fallback`或者`fallbackFactory`，当触发熔断时，会直接抛出`RetrofitBlockException`异常。 用户可以通过设置`fallback`或者`fallbackFactory`来定制熔断时的方法返回值。
+> Note: `fallback` class must be the implementation class of the current interface, `fallbackFactory` must be `FallbackFactory<T>`
+Implementation class, the generic parameter type is the current interface type. In addition, `fallback` and `fallbackFactory` instances must be configured as `Spring Bean`.
 
-> 注意：`fallback`类必须是当前接口的实现类，`fallbackFactory`必须是`FallbackFactory<T>`
-实现类，泛型参数类型为当前接口类型。另外，`fallback`和`fallbackFactory`实例必须配置成`Spring Bean`。
-
-`fallbackFactory`相对于`fallback`，主要差别在于能够感知每次熔断的异常原因(cause)，参考示例如下：
+The main difference between `fallbackFactory` and `fallback` is that it can perceive the abnormal cause (cause) of each fuse. The reference example is as follows:
 
 ```java
 
@@ -592,17 +536,18 @@ public class HttpDegradeFallbackFactory implements FallbackFactory<HttpDegradeAp
 }
 ```
 
-### 错误解码器
+### Error Decoder
 
-在`HTTP`发生请求错误(包括发生异常或者响应数据不符合预期)的时候，错误解码器可将`HTTP`相关信息解码到自定义异常中。你可以在`@RetrofitClient`注解的`errorDecoder()`
-指定当前接口的错误解码器，自定义错误解码器需要实现`ErrorDecoder`接口：
+When a request error occurs in `HTTP` (including an exception or the response data does not meet expectations), the error decoder can decode the `HTTP` related information into a custom exception. You can use `errorDecoder()` in the `@RetrofitClient` annotation
+Specifies the error decoder of the current interface. Custom error decoders need to implement the `ErrorDecoder` interface:
 
-### 微服务之间的HTTP调用
 
-#### 继承`ServiceInstanceChooser`
+### HTTP Calls Between Microservices
 
-用户可以自行实现`ServiceInstanceChooser`接口，完成服务实例的选取逻辑，并将其配置成`Spring Bean`。对于`Spring Cloud`
-应用，组件提供了`SpringCloudServiceInstanceChooser`实现，用户只需将其配置成`Spring Bean`即可。
+#### Inherit `ServiceInstanceChooser`
+
+Users can implement the `ServiceInstanceChooser` interface by themselves, complete the selection logic of service instances, and configure them as `Spring Bean`. For `Spring Cloud`
+Application, component provides `SpringCloudServiceInstanceChooser` implementation, users only need to configure it as `Spring Bean`.
 
 ```java
 @Bean
@@ -612,7 +557,7 @@ public ServiceInstanceChooser serviceInstanceChooser(LoadBalancerClient loadBala
 }
 ```
 
-#### 指定`serviceId`和`path`
+#### Specify `serviceId` and `path`
 
 ```java
 
@@ -620,11 +565,11 @@ public ServiceInstanceChooser serviceInstanceChooser(LoadBalancerClient loadBala
 public interface ApiCountService {}
 ```
 
-## 全局拦截器
+## Global Interceptor
 
-### 全局应用拦截器
+### Global Application Interceptor
 
-如果我们需要对整个系统的的`HTTP`请求执行统一的拦截处理，可以实现全局拦截器`GlobalInterceptor`, 并配置成`spring Bean`。
+If we need to perform unified interception processing for `HTTP` requests of the entire system, we can implement the global interceptor `GlobalInterceptor` and configure it as `spring Bean`.
 
 ```java
 @Component
@@ -645,34 +590,34 @@ public class SourceGlobalInterceptor implements GlobalInterceptor {
 }
 ```
 
-### 全局网络拦截器
+### Global Network Interceptor
 
-实现`NetworkInterceptor`接口，并配置成`spring Bean`。
+Implement the `NetworkInterceptor` interface and configure it as a `spring Bean`.
 
-## 调用适配器
+## Call Adapter
 
-`Retrofit`可以通过`CallAdapterFactory`将`Call<T>`对象适配成接口方法的返回值类型。组件扩展了一些`CallAdapterFactory`实现：
+`Retrofit` can adapt `Call<T>` objects to the return type of interface methods through `CallAdapterFactory`. The component extends some `CallAdapterFactory` implementations:
 
 1. `BodyCallAdapterFactory`
-   - 同步执行`HTTP`请求，将响应体内容适配成方法的返回值类型。
-   - 任意方法返回值类型都可以使用`BodyCallAdapterFactory`，优先级最低。
+    - Execute the `HTTP` request synchronously, adapting the content of the response body to the return value type of the method.
+    - Any method return value type can use `BodyCallAdapterFactory`, with the lowest priority.
 2. `ResponseCallAdapterFactory`
-    - 同步执行`HTTP`请求，将响应体内容适配成`Retrofit.Response<T>`返回。
-    - 只有方法返回值类型为`Retrofit.Response<T>`，才可以使用`ResponseCallAdapterFactory`。
-3. 响应式编程相关`CallAdapterFactory`
+    - Execute the `HTTP` request synchronously, adapt the content of the response body to `Retrofit.Response<T>` and return it.
+    - The `ResponseCallAdapterFactory` can only be used if the method return value type is `Retrofit.Response<T>`.
+3. Reactive programming related `CallAdapterFactory`, supports the following method return value types:
+   
+**`Retrofit` will select the corresponding `CallAdapterFactory` to perform adaptation processing according to the return value type of the method**. The currently supported return value types are as follows:
 
-**`Retrofit`会根据方法返回值类型选择对应的`CallAdapterFactory`执行适配处理**，目前支持的返回值类型如下：
-
-- `String`：将`Response Body`适配成`String`返回。
-- 基础类型(`Long`/`Integer`/`Boolean`/`Float`/`Double`)：将`Response Body`适配成上述基础类型
-- 任意`Java`类型： 将`Response Body`适配成对应的`Java`对象返回
-- `CompletableFuture<T>`: 将`Response Body`适配成`CompletableFuture<T>`对象返回
-- `Void`: 不关注返回类型可以使用`Void`
-- `Response<T>`: 将`Response`适配成`Response<T>`对象返回
-- `Call<T>`: 不执行适配处理，直接返回`Call<T>`对象
-- `Mono<T>`: `Project Reactor`响应式返回类型
-- `Single<T>`：`Rxjava`响应式返回类型（支持`Rxjava2/Rxjava3`）
-- `Completable`：`Rxjava`响应式返回类型，`HTTP`请求没有响应体（支持`Rxjava2/Rxjava3`）
+- String：Adapt `Response Body` to `String` to return.
+- Basic type (`Long`/`Integer`/`Boolean`/`Float`/`Double`): adapt `Response Body` to the above basic type
+- Any `Java` type: adapt the `Response Body` to the corresponding `Java` object and return it
+- `CompletableFuture<T>`: adapt `Response Body` to a `CompletableFuture<T>` object and return it
+- `Void`: `Void` can be used regardless of the return type
+- `Response<T>`: `Response<T>`: adapt `Response` to a `Response<T>` object and return it
+- `Call<T>`: No adaptation processing is performed, and the `Call<T>` object is returned directly
+- `Mono<T>`: `Project Reactor` reactive return type
+- `Single<T>`: `Rxjava` reactive return type (supports `Rxjava2/Rxjava3`)
+- `Completable`: `Rxjava` reactive return type, `HTTP` request has no response body (supports `Rxjava2/Rxjava3`)
 
 ```java
 @RetrofitClient(baseUrl = "${test.baseUrl}")
@@ -708,24 +653,24 @@ public interface HttpApi {
 
 ```
 
-可以通过继承`CallAdapter.Factory`扩展`CallAdapter`。
+`CallAdapter` can be extended by extending `CallAdapter.Factory`.
 
-组件支持通过`retrofit.global-call-adapter-factories`配置全局调用适配器工厂：
+Components support configuring global call adapter factories via `retrofit.global-call-adapter-factories`:
+
 ```yaml
 retrofit:
-  # 全局转换器工厂(组件扩展的`CallAdaptorFactory`工厂已经内置，这里请勿重复配置)
+  # The `CallAdaptorFactory` factory extended by the component has been built in, please do not repeat the configuration here
   global-call-adapter-factories:
     # ...
 ```
 
-针对每个Java接口，还可以通过`@RetrofitClient.callAdapterFactories`指定当前接口采用的`CallAdapter.Factory`。
+For each Java interface, you can also specify the `CallAdapter.Factory` used by the current interface through `@RetrofitClient.callAdapterFactories`.
 
-> 建议：将`CallAdapter.Factory`配置成`Spring Bean`
+> Recommendation: configure `CallAdapter.Factory` as `Spring Bean`
 
+### Data Converter
 
-### 数据转码器
-
-`Retrofit`使用`Converter`将`@Body`注解的对象转换成`Request Body`，将`Response Body`转换成一个`Java`对象，可以选用以下几种`Converter`：
+`Retrofit` uses `Converter` to convert the object annotated with `@Body` into `Request Body`, and `Response Body` into a `Java` object. You can choose the following `Converter`:
 
 - [Gson](https://github.com/google/gson): com.squareup.Retrofit:converter-gson
 - [Jackson](https://github.com/FasterXML/jackson): com.squareup.Retrofit:converter-jackson
@@ -736,25 +681,24 @@ retrofit:
 - [JAXB](https://docs.oracle.com/javase/tutorial/jaxb/intro/index.html): com.squareup.retrofit2:converter-jaxb
 - fastJson：com.alibaba.fastjson.support.retrofit.Retrofit2ConverterFactory
 
-组件支持通过`retrofit.global-converter-factories`配置全局`Converter.Factory`，默认的是`retrofit2.converter.jackson.JacksonConverterFactory`。
+Configure the global `Converter.Factory` through `retrofit.global-converter-factories`, the default is `retrofit2.converter.jackson.JacksonConverterFactory`.
 
-如果需要修改`Jackson`配置，自行覆盖`JacksonConverterFactory`的`bean`配置即可。
+If you need to modify the `Jackson` configuration, you can override the `bean` configuration of the `JacksonConverterFactory` by yourself.
 
 ```yaml
 retrofit:
-   # 全局转换器工厂
    global-converter-factories:
       - com.github.lianjiatech.retrofit.spring.boot.core.BasicTypeConverterFactory
       - retrofit2.converter.jackson.JacksonConverterFactory
 ```
 
-针对每个`Java`接口，还可以通过`@RetrofitClient.converterFactories`指定当前接口采用的`Converter.Factory`。
+For each `Java` interface, you can also specify the `Converter.Factory` used by the current interface through `@RetrofitClient.converterFactories`.
 
-> 建议：将`Converter.Factory`配置成`Spring Bean`。
+> Recommendation: Configure `Converter.Factory` as `Spring Bean`.
 
-### 元注解
+### Meta-annotation
 
-`@RetrofitClient`、`@Retry`、`@Logging`、`@Resilience4jDegrade`等注解支持元注解、继承以及`@AliasFor`。 
+Annotations such as `@RetrofitClient`, `@Retry`, `@Logging`, `@Resilience4jDegrade` support meta-annotations, inheritance, and `@AliasFor`.
 
 ```java
 
@@ -775,14 +719,14 @@ public @interface MyRetrofitClient {
 }
 ```
 
-## 其他功能示例
+## Other Examples
 
-### form参数
+### Form Parameter
 
 ```java
 @FormUrlEncoded
 @POST("token/verify")
-Object tokenVerify(@Field("source") String source,@Field("signature") String signature,@Field("token") String token);
+ Object tokenVerify(@Field("source") String source,@Field("signature") String signature,@Field("token") String token);
 
 
 @FormUrlEncoded
@@ -790,9 +734,9 @@ Object tokenVerify(@Field("source") String source,@Field("signature") String sig
 CompletableFuture<Object> sendMessage(@FieldMap Map<String, Object> param);
 ```
 
-### 文件上传
+### File Upload
 
-#### 创建MultipartBody.Part
+#### Create MultipartBody.Part
 
 ```java
 // 对文件名使用URLEncoder进行编码
@@ -805,7 +749,7 @@ public ResponseEntity importTerminology(MultipartFile file){
 }
 ```
 
-#### `HTTP`上传接口
+#### `HTTP` Upload Interface
 
 ```java
 @POST("upload")
@@ -813,9 +757,9 @@ public ResponseEntity importTerminology(MultipartFile file){
 Void upload(@Part MultipartBody.Part file);
 ```
 
-### 文件下载
+### File Download
 
-#### `HTTP`下载接口
+#### `HTTP` Download Interface
 
 ```java
 @RetrofitClient(baseUrl = "https://img.ljcdn.com/hc-picture/")
@@ -827,7 +771,7 @@ public interface DownloadApi {
 
 ```
 
-#### `HTTP`下载使用
+#### `HTTP` Download Using
 
 ```java
 @SpringBootTest(classes = RetrofitTestApplication.class)
@@ -841,10 +785,8 @@ public class DownloadTest {
         String fileKey = "6302d742-ebc8-4649-95cf-62ccf57a1add";
         Response<ResponseBody> response = downLoadApi.download(fileKey);
         ResponseBody responseBody = response.body();
-        // 二进制流
         InputStream is = responseBody.byteStream();
 
-        // 具体如何处理二进制流，由业务自行控制。这里以写入文件为例
         File tempDirectory = new File("temp");
         if (!tempDirectory.exists()) {
             tempDirectory.mkdir();
@@ -865,41 +807,31 @@ public class DownloadTest {
 }
 ```
 
-### 动态URL
+### Dynamic URL
 
-使用`@url`注解可实现动态URL。此时，`baseUrl`配置任意合法url即可。例如： `http://github.com/` 。运行时只会根据`@Url`地址发起请求。
+Use the `@url` annotation to implement dynamic URLs. At this point, `baseUrl` can be configured with any legal url. For example: `http://github.com/` . The runtime will only make requests based on the `@Url` address.
 
-> 注意：`@url`必须放在方法参数的第一个位置，另外，`@GET`、`@POST`等注解上，不需要定义端点路径。
-
+> Note: `@url` must be placed in the first position of the method parameter. In addition, on annotations such as `@GET` and `@POST`, there is no need to define the endpoint path.
+> 
 ```java
  @GET
  Map<String, Object> test3(@Url String url,@Query("name") String name);
 ```
 
-### `DELETE`请求添加请求体
+### `DELETE` request adds request body
 
 ```java
 @HTTP(method = "DELETE", path = "/user/delete", hasBody = true)
 ```
 
-### `GET`请求添加请求体
+### `GET` request adds request body
 
-`okhttp3`自身不支持`GET`请求添加请求体，源码如下：
+`okhttp3` itself does not support the `GET` request to add a request body, the source code is as follows:
 
 ![image](https://user-images.githubusercontent.com/30620547/108949806-0a9f7780-76a0-11eb-9eb4-326d5d546e98.png)
 
 ![image](https://user-images.githubusercontent.com/30620547/108949831-1ab75700-76a0-11eb-955c-95d324084580.png)
 
-作者给出了具体原因，可以参考: [issue](https://github.com/square/okhttp/issues/3154)
+The author gives the specific reasons, you can refer to: [issue](https://github.com/square/okhttp/issues/3154)
 
-但是，如果实在需要这么做，可以使用：`@HTTP(method = "get", path = "/user/get", hasBody = true)`，使用小写`get`绕过上述限制。
-
-
-## 反馈建议
-
-如有任何问题，欢迎提issue或者加QQ群反馈。
-
-群号：806714302
-
-![QQ群图片](https://github.com/LianjiaTech/retrofit-spring-boot-starter/blob/master/group.png)
-
+However, if you really need to do this, you can use: `@HTTP(method = "get", path = "/user/get", hasBody = true)`, Use lowercase `get` to bypass the above restrictions.
